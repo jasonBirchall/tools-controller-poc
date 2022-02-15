@@ -19,11 +19,11 @@ Please install [kind](https://kind.sigs.k8s.io/) and [kubectl](https://kubernete
 ### Creating a cluster
 
 ```bash
-make cluster-up
+kind create cluster --config kind.yaml
 ```
 
 ### Destroy a cluster
 
 ```bash
-make cluster-down
+kind delete cluster
 ```
