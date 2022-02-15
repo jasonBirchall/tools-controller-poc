@@ -9,3 +9,21 @@ Please if you can use [conventional commits](https://conventionalcommits.org/) t
 ## Versioning
 
 Please use [semantic versioning](https://semver.org/) for versioning when releasing. This will make it easier to track changes and to make it easier to find the latest version.
+
+## Testing locally
+
+### Prereqs
+
+Please install [kind](https://kind.sigs.k8s.io/) and [kubectl](https://kubernetes.io/docs/reference/kubectl/).
+
+### Creating a cluster
+
+```bash
+make cluster-up
+```
+
+### Destroy a cluster
+
+```bash
+make cluster-down
+```
