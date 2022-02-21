@@ -2,5 +2,7 @@ apiVersion: ap-tools.tools/v1
 kind: Tools
 metadata:
   name: tools-sample
+  namespace: default
 spec:
-  # TODO(user): Add fields here
+  name: tools-sample
+  version: 1.0.0
