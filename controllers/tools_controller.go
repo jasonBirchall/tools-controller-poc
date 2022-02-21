@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	webappv1 "github.com/jasonbirchall/tools-controller-poc/api/v1"
+	aptoolsv1 "github.com/jasonbirchall/tools-controller-poc/api/v1"
 )
 
 // ToolsReconciler reconciles a Tools object
@@ -33,9 +33,9 @@ type ToolsReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=webapp.my.domain,resources=tools,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=webapp.my.domain,resources=tools/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=webapp.my.domain,resources=tools/finalizers,verbs=update
+//+kubebuilder:rbac:groups=ap-tools.tools,resources=tools,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=ap-tools.tools,resources=tools/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=ap-tools.tools,resources=tools/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -57,6 +57,6 @@ func (r *ToolsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 // SetupWithManager sets up the controller with the Manager.
 func (r *ToolsReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&webappv1.Tools{}).
+		For(&aptoolsv1.Tools{}).
 		Complete(r)
 }

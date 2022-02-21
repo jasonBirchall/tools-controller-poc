@@ -6,7 +6,7 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - webapp.my.domain
+  - ap-tools.tools
   resources:
   - tools
   verbs:
@@ -18,13 +18,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - webapp.my.domain
+  - ap-tools.tools
   resources:
   - tools/finalizers
   verbs:
   - update
 - apiGroups:
-  - webapp.my.domain
+  - ap-tools.tools
   resources:
   - tools/status
   verbs:

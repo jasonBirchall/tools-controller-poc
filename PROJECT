@@ -1,4 +1,4 @@
-domain: my.domain
+domain: tools
 layout:
 - go.kubebuilder.io/v3
 projectName: tools-controller-poc
@@ -8,8 +8,8 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: my.domain
-  group: webapp
+  domain: tools
+  group: ap-tools
   kind: Tools
   path: github.com/jasonbirchall/tools-controller-poc/api/v1
   version: v1

@@ -1,4 +1,4 @@
-apiVersion: webapp.my.domain/v1
+apiVersion: ap-tools.tools/v1
 kind: Tools
 metadata:
   name: tools-sample

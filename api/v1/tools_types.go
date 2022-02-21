@@ -25,69 +25,20 @@ import (
 
 // ToolsSpec defines the desired state of Tools
 type ToolsSpec struct {
-	// Name specifies the name of the tool
-	// +optional
-	Name string `json:"name,omitempty"`
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// Important: Run "make" to regenerate code after modifying this file
 
-	// Id specifies the id of the tool
-	// +optional
-	Id string `json:"id,omitempty"`
+	Name string `json:"name"`
+	// Foo is an example field of Tools. Edit tools_types.go to remove/update
 
-	// Versions specifies all versions of the tool
-	// +optional
-	Versions []Version `json:"versions,omitempty"`
-
-	// Description specifies the description of the tool
-	// +optional
-	Description string `json:"description,omitempty"`
-
-	// Homepage specifies the homepage of the tool
-	// +optional
-	Homepage string `json:"homepage,omitempty"`
-
-	// Documentation specifies the documentation of the tool
-	// +optional
-	Documentation string `json:"documentation,omitempty"`
-
-	// Repository specifies the repository of the tool
-	// +optional
-	Repository string `json:"repository,omitempty"`
-}
-
-type Version struct {
-	Major int `json:"major,omitempty"`
-	Minor int `json:"minor,omitempty"`
-	Patch int `json:"patch,omitempty"`
+	Version string `json:"version"`
 }
 
 // ToolsStatus defines the observed state of Tools
 type ToolsStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Running indicates whether the tool is running
-	// +optional
-	Running bool `json:"running,omitempty"`
-
-	// Installed indicates whether the tool is installed in a users namespace
-	// +optional
-	Installed bool `json:"installed,omitempty"`
-
-	// Version indicates the version of the tool
-	// +optional
-	Version Version `json:"version,omitempty"`
-
-	// Error indicates the error message of the tool
-	// +optional
-	Error string `json:"error,omitempty"`
-
-	// ErrorTime indicates the time when the error occurred
-	// +optional
-	ErrorTime metav1.Time `json:"errorTime,omitempty"`
-
-	// ErrorCount indicates the number of times the tool has failed
-	// +optional
-	ErrorCount int `json:"errorCount,omitempty"`
+	NumberExists int `json:"numberExists"`
 }
 
 //+kubebuilder:object:root=true
