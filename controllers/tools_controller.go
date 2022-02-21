@@ -49,7 +49,35 @@ type ToolsReconciler struct {
 func (r *ToolsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	// Get all tools in the cluster and create a list of all versions.
+	tools := &aptoolsv1.ToolsList{}
+	if err := r.List(ctx, tools); err != nil {
+		return ctrl.Result{}, err
+	}
+
+	var (
+		latestVersion    string
+		previousVersions []string
+	)
+
+	for _, tool := range tools.Items {
+		if tool.Spec.Version > latestVersion {
+			latestVersion = tool.Spec.Version
+		} else {
+			previousVersions = append(previousVersions, tool.Spec.Version)
+		}
+	}
+
+	// Amend the latest tool with the list of previous versions.
+	for _, tool := range tools.Items {
+		if tool.Spec.Version == latestVersion {
+			tool.Spec.PreviousVersions = previousVersions
+			if err := r.Update(ctx, &tool); err != nil {
+				log.Log.Error(err, "failed to update latest tool")
+				return ctrl.Result{}, err
+			}
+		}
+	}
 
 	return ctrl.Result{}, nil
 }

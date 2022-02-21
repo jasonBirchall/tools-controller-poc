@@ -31,3 +31,11 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - batch
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
