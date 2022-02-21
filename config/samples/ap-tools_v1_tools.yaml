@@ -1,8 +1,9 @@
 apiVersion: ap-tools.tools/v1
 kind: Tools
 metadata:
-  name: tools-sample
+  name: rstudio
   namespace: default
 spec:
-  name: tools-sample
+  name: rstudio
   version: 1.0.0
+  image: unknown

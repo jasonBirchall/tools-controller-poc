@@ -20,25 +20,33 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // ToolsSpec defines the desired state of Tools
 type ToolsSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
+	//+kubebuilder:validation:MinLength=0
 	Name string `json:"name"`
-	// Foo is an example field of Tools. Edit tools_types.go to remove/update
 
+	//+kubebuilder:validation:MinLength=0
 	Version string `json:"version"`
+
+	PreviousVersions []string `json:"previousVersions,omitempty"`
+
+	//+kubebuilder:validation:MinLength=0
+	Image string `json:"image"`
 }
 
 // ToolsStatus defines the observed state of Tools
 type ToolsStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	NumberExists int `json:"numberExists"`
+	// + optional
+	Installs int32 `json:"installs"`
+
+	// + optional
+	Created *metav1.Time `json:"created,omitempty"`
 }
 
 //+kubebuilder:object:root=true
