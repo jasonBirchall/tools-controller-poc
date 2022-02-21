@@ -85,6 +85,13 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "Tools")
 		os.Exit(1)
 	}
+	if err = (&controllers.UserToolsReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "UserTools")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {

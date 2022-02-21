@@ -32,10 +32,64 @@ rules:
   - patch
   - update
 - apiGroups:
-  - batch
+  - ap-tools.tools
   resources:
-  - pods
+  - usertools
   verbs:
+  - create
+  - delete
   - get
   - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - ap-tools.tools
+  resources:
+  - usertools/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - ap-tools.tools
+  resources:
+  - usertools/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - ingress
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
   - watch
