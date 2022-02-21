@@ -27,6 +27,9 @@ type ToolsSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	//+kubebuilder:validation:MinLength=0
+	Id string `json:"id"`
+
+	//+kubebuilder:validation:MinLength=0
 	Name string `json:"name"`
 
 	//+kubebuilder:validation:MinLength=0

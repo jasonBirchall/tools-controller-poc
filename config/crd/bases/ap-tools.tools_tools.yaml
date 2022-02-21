@@ -35,6 +35,9 @@ spec:
           spec:
             description: ToolsSpec defines the desired state of Tools
             properties:
+              id:
+                minLength: 0
+                type: string
               image:
                 minLength: 0
                 type: string
@@ -49,9 +52,9 @@ spec:
                 minLength: 0
                 type: string
             required:
+            - id
             - image
             - name
-            - previousVersions
             - version
             type: object
           status:
