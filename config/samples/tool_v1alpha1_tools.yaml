@@ -3,6 +3,7 @@ kind: Tools
 metadata:
   name: tools-sample
 spec:
-  name: tools-sample
-  version: "1.1.1"
-  id: 23232
+  # TODO(user): Add fields here
+  name: sample-tool
+  version: "1.0.0"
+  id: "1"

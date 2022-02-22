@@ -16,18 +16,4 @@ resources:
   kind: Tools
   path: github.com/jasonbirchall/tools-controller-poc/api/v1alpha1
   version: v1alpha1
-- api:
-    crdVersion: v1
-    namespaced: true
-  domain: analytical-platform.justice
-  group: tool
-  kind: Jupyterlab
-  version: v1alpha1
-- api:
-    crdVersion: v1
-    namespaced: true
-  domain: analytical-platform.justice
-  group: tool
-  kind: Rstudio
-  version: v1alpha1
 version: "3"

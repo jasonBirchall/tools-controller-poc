@@ -29,37 +29,16 @@ type ToolsSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of Tools. Edit tools_types.go to remove/update
-	Name string `json:"name,omitempty"`
-
+	Name    string `json:"name,omitempty"`
 	Version string `json:"version,omitempty"`
-
-	Id uint16 `json:"id,omitempty"`
-
-	Repository string `json:"repository,omitempty"`
-
-	ChartPath string `json:"chartPath,omitempty"`
-
-	ChartName string `json:"chartName,omitempty"`
-
-	ChartVersion string `json:"chartVersion,omitempty"`
-
-	Image string `json:"image,omitempty"`
+	Id      string `json:"id,omitempty"`
 }
 
 // ToolsStatus defines the observed state of Tools
 type ToolsStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	LatestVersion string `json:"latestVersion,omitempty"`
-
 	PreviousVersions []string `json:"previousVersions,omitempty"`
-
-	LatestVersionId uint16 `json:"latestVersionId,omitempty"`
-
-	LatestChartVersion string `json:"latestChartVersion,omitempty"`
-
-	LatestChartVersionId uint16 `json:"latestChartVersionId,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -77,7 +56,6 @@ type Tools struct {
 //+kubebuilder:object:root=true
 
 // ToolsList contains a list of Tools
-// +kubebuilder:subresource:status
 type ToolsList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

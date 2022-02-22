@@ -1,6 +1,0 @@
-apiVersion: tool.analytical-platform.justice/v1alpha1
-kind: Airflow
-metadata:
-  name: airflow-sample
-spec:
-  # TODO(user): Add fields here
