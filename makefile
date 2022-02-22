@@ -36,7 +36,7 @@ IMAGE_TAG_BASE ?= analytical-platform.justice/tools-controller-poc
 BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
 
 # Image URL to use all building/pushing image targets
-IMG ?= controller:latest
+IMG = json0/tools-controller-poc:latest
 
 .PHONY: all
 all: docker-build

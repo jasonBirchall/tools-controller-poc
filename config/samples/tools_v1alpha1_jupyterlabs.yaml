@@ -3,45 +3,56 @@ kind: Jupyterlabs
 metadata:
   name: jupyterlabs-sample
 spec:
-  # Default values copied from <project_dir>/helm-charts/jupyter-lab/values.yaml
-  Username: test
-  aws:
-    accountID: "593291632749"
-    defaultRegion: eu-west-1
-    iamRole: ""
-  cookie_secret: ""
-  jupyter:
-    containerPort: 8888
-    image: 593291632749.dkr.ecr.eu-west-1.amazonaws.com/allspark-notebook
-    imagePullPolicy: IfNotPresent
-    resources:
-      limits:
-        cpu: 1.5
-        memory: 12Gi
-      requests:
-        cpu: 1.5
-        memory: 12Gi
-    tag: v2.1.0-rc1
-  proxy:
-    auth0:
-      clientId: ""
-      clientSecret: ""
-      domain: AUTH0_USER.eu.auth0.com
-      logoutUrl: https://controlpanel.services.alpha.mojanalytics.xyz/
-    image:
-      pullPolicy: IfNotPresent
-      repository: 593291632749.dkr.ecr.eu-west-1.amazonaws.com/nginx-proxy-jupyter
-      tag: 0.0.1
-    port: 3000
-    resources:
-      limits:
-        cpu: 1
-        memory: 128Mi
-      requests:
-        cpu: 0.5
-        memory: 128Mi
+  # Default values copied from <project_dir>/helm-charts/jupyterlab/values.yaml
+  affinity: {}
+  extraEnvs: []
+  gitEmail: default@maastrichtuniversity.nl
+  gitName: Default user
+  gitUrl: ""
+  image:
+    addJupyterConfig: false
+    command: []
+    pullPolicy: Always
+    repository: ghcr.io/maastrichtu-ids/jupyterlab
+    tag: latest
+  imagePullSecrets: []
+  nodeSelector: {}
+  password: "testPassword"
+  podAnnotations: {}
+  podSecurityContext: {}
+  resources: {}
+  securityContext: {}
   service:
-    port: 80
-  toolsDomain: tools.example.com
-  
-  
+    ingress:
+      annotations: {}
+      enabled: false
+      hosts:
+      - host: chart-example.local
+        paths: []
+      tls: []
+    openshiftRoute:
+      enabled: false
+      host: ""
+      path: ""
+      tls:
+        enabled: true
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+      wildcardPolicy: None
+    port: 8888
+    type: ClusterIP
+  serviceAccount:
+    annotations: {}
+    create: false
+    name: anyuid
+    sudoEnabled: true
+  storage:
+    enableDshm: true
+    enabled: true
+    extraStorage: []
+    mountPath: /home/jovyan/work
+    size: 5Gi
+    workingDir: ""
+  tolerations: []
+
+

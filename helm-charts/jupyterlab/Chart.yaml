@@ -1,0 +1,22 @@
+annotations:
+  artifacthub.io/operator: "false"
+apiVersion: v2
+appVersion: 1.16.0
+description: A Helm chart to deploy JupyterLab on CPU and GPU in OpenShift and Kubernetes
+  clusters. Works well with images based on the jupyter/docker-stacks, and images
+  using the root user
+home: https://artifacthub.io/packages/helm/dsri-helm-charts/jupyterlab
+icon: https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Jupyter_logo.svg/207px-Jupyter_logo.svg.png
+keywords:
+- jupyterlab
+- jupyter
+- notebook
+- workspace
+- python
+- openshift
+maintainers:
+- email: vincent.emonet@gmail.com
+  name: Vincent Emonet
+name: jupyterlab
+type: application
+version: 0.1.37

@@ -1,0 +1,118 @@
+# Default values for jupyterlab.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Password to access the web interface
+password: ""
+
+# Git URL to be cloned in the workspace
+gitUrl: ""
+# gitUrl: "https://github.com/MaastrichtU-IDS/dsri-demo"
+
+# Git config to be set in the container
+gitName: "Default user"
+gitEmail: "default@maastrichtuniversity.nl"
+
+image:
+  repository: ghcr.io/maastrichtu-ids/jupyterlab
+  tag: "latest"
+  pullPolicy: Always
+  # or IfNotPresent
+  # Mount a jupyter_notebook_config.py to automatically clone $GIT_URL and install requirements on startup, this overrides command
+  addJupyterConfig: false
+  command: []
+  # command: ["jupyter", "lab", "--allow-root", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--config=/etc/jupyter/jupyter_notebook_config.py"]
+  # command: "start-notebook.sh --no-browser --ip=0.0.0.0 --config=/etc/jupyter/jupyter_notebook_config.py"
+
+storage:
+  enabled: true
+  size: 5Gi
+  mountPath: /home/jovyan/work
+  # Let workspace empty to use the mountPath as workspace
+  workingDir: ""
+  # Mount the distributed shared memory
+  enableDshm: true
+  extraStorage: []
+  # extraStorage: 
+  #   - name: easybuild-data
+  #     mountPath: /opt/apps/easybuild
+  #     readOnly: true
+
+serviceAccount:
+  sudoEnabled: true
+  # Specifies whether a service account should be created
+  create: false
+  name: "anyuid"
+  # Annotations to add to the service account
+  annotations: {}
+
+service:
+  port: 8888
+  type: ClusterIP
+  openshiftRoute:
+    enabled: true
+    host: ""
+    path: ""
+    wildcardPolicy: None
+    tls:
+      enabled: true
+      termination: edge
+      insecureEdgeTerminationPolicy: Redirect
+  ingress:
+    enabled: false
+    annotations: {}
+    hosts:
+      - host: chart-example.local
+        paths: []
+    tls: []
+
+extraEnvs: []
+# extraEnvs: 
+#   - name: PASSWORD
+#     value: mypassword
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # Assign a GPU to this JupyterLab (requires to have GPU quota in the project):
+  # requests:
+  #   nvidia.com/gpu: '1'
+  # limits:
+  #   nvidia.com/gpu: '1'
+
+tolerations: []
+## For GPU use:
+# tolerations: 
+#   - effect: NoSchedule
+#     key: "nvidia.com/gpu"
+#     operator: Exists
+
+
+## Overwritten if serviceAccount.sudoEnabled: true
+securityContext: {}
+  # runAsUser: 0
+  # supplementalGroups:
+  # - 100
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+podSecurityContext: {}
+  # runAsUser: 0
+  # supplementalGroups:
+  # - 100
+imagePullSecrets: []
+podAnnotations: {}
+nodeSelector: {}
+affinity: {}

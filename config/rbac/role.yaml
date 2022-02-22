@@ -48,29 +48,16 @@ rules:
 - verbs:
   - "*"
   apiGroups:
-  - ""
-  resources:
-  - "configmaps"
-  - "secrets"
-  - "serviceaccounts"
-  - "services"
-- verbs:
-  - "*"
-  apiGroups:
   - "apps"
   resources:
   - "deployments"
 - verbs:
   - "*"
   apiGroups:
-  - "batch"
+  - ""
   resources:
-  - "jobs"
-- verbs:
-  - "*"
-  apiGroups:
-  - "extensions"
-  resources:
-  - "ingresses"
+  - "persistentvolumeclaims"
+  - "secrets"
+  - "services"
 
 #+kubebuilder:scaffold:rules

@@ -1,0 +1,155 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "jupyterlab.fullname" . }}
+  labels:
+    {{- include "jupyterlab.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "jupyterlab.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "jupyterlab.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "jupyterlab.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- if .Values.serviceAccount.sudoEnabled }}
+            runAsUser: 0
+            {{- else }}
+            {{- toYaml .Values.securityContext | nindent 12 }}
+            {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          {{- if .Values.image.workingDir }}
+          workingDir: {{ .Values.storage.workingDir }}
+          {{- else }}
+          workingDir: {{ .Values.storage.mountPath }}
+          {{- end }}
+          {{- if .Values.image.addJupyterConfig }}
+          command: 
+            - "jupyter"
+            - "lab"
+            - "--allow-root"
+            - "--no-browser"
+            - "--ip=0.0.0.0"
+            - "--port=8888"
+            - "--config=/etc/jupyter/jupyter_notebook_config.py"
+          {{- else }}
+          {{- if .Values.image.command }}
+          command:
+            {{- toYaml .Values.image.command | nindent 12 }}
+          {{- end }}
+          {{- end }}
+          env:
+            - name: JUPYTER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  key: application-password
+                  name: {{ include "jupyterlab.fullname" . }}
+            - name: JUPYTER_ENABLE_LAB
+              value: "yes"
+            {{- if .Values.serviceAccount.sudoEnabled }}
+            - name: GRANT_SUDO
+              value: "yes"
+            {{- end }}
+            - name: GIT_URL
+              value: {{ .Values.gitUrl }}
+            - name: GIT_NAME
+              value: {{ .Values.gitName }}
+            - name: GIT_EMAIL
+              value: {{ .Values.gitEmail }}
+            # To enable updating the image: https://github.com/kubernetes/kubernetes/issues/33664
+            - name: RELEASE_DATE
+              value: "{{ now }}"
+            {{- range .Values.extraEnvs }}
+            - name: {{ toString .name }}
+              value: {{ toString .value }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15 
+            failureThreshold: 40
+            periodSeconds: 10
+            timeoutSeconds: 2
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 15 
+            failureThreshold: 40
+            periodSeconds: 10
+            timeoutSeconds: 2
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.storage.enableDshm }}
+            - name: dshm
+              mountPath: /dev/shm
+            {{- end }}
+            {{- if .Values.image.addJupyterConfig }}
+            - name: configs
+              mountPath: "/etc/jupyter"
+            {{- end }}
+            {{- if .Values.storage.enabled }}
+            - name: data
+              mountPath: {{ .Values.storage.mountPath }}
+            {{- end }}
+            {{- range .Values.storage.extraStorage }}
+            - name: {{ toString .name }}
+              mountPath: {{ toString .mountPath }}
+            {{- end }}
+      volumes:
+        {{- if .Values.storage.enableDshm }}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+        {{- end }}
+        {{- if .Values.image.addJupyterConfig }}
+        - name: configs
+          configMap:
+            name: {{ include "jupyterlab.fullname" . }}
+        {{- end }}
+        {{- if .Values.storage.enabled }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ include "jupyterlab.fullname" . }}
+        {{- end }}
+        {{- range .Values.storage.extraStorage }}
+        - name: {{ toString .name }}
+          persistentVolumeClaim:
+            claimName: {{ toString .name }}
+            readOnly: {{ toString .readOnly }}
+        {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

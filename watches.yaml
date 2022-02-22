@@ -2,5 +2,5 @@
 - group: tools.analytical-platform.justice
   version: v1alpha1
   kind: Jupyterlabs
-  chart: helm-charts/jupyter-lab
+  chart: helm-charts/jupyterlab
 #+kubebuilder:scaffold:watch
