@@ -2,20 +2,23 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: jupyterlabs.tool.analytical-platform.justice
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: tools.tool.analytical-platform.justice
 spec:
   group: tool.analytical-platform.justice
   names:
-    kind: Jupyterlab
-    listKind: JupyterlabList
-    plural: jupyterlabs
-    singular: jupyterlab
+    kind: Tools
+    listKind: ToolsList
+    plural: tools
+    singular: tools
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Jupyterlab is the Schema for the jupyterlabs API
+        description: Tools is the Schema for the tools API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -30,15 +33,24 @@ spec:
           metadata:
             type: object
           spec:
-            description: Spec defines the desired state of Jupyterlab
+            description: ToolsSpec defines the desired state of Tools
+            properties:
+              foo:
+                description: Foo is an example field of Tools. Edit tools_types.go
+                  to remove/update
+                type: string
             type: object
-            x-kubernetes-preserve-unknown-fields: true
           status:
-            description: Status defines the observed state of Jupyterlab
+            description: ToolsStatus defines the observed state of Tools
             type: object
-            x-kubernetes-preserve-unknown-fields: true
         type: object
     served: true
     storage: true
     subresources:
       status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

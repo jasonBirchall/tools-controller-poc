@@ -1,10 +1,14 @@
 # Use the 'create api' subcommand to add watches to this file.
 - group: tool.analytical-platform.justice
   version: v1alpha1
-  kind: Jupyterlabs
+  kind: Rstudio
+  chart: helm-charts/rstudio
+- group: tool.analytical-platform.justice
+  version: v1alpha1
+  kind: Jupyterlab
   chart: helm-charts/jupyter-lab
 - group: tool.analytical-platform.justice
   version: v1alpha1
-  kind: Rstudio
-  chart: helm-charts/rstudio
+  kind: Airflow
+  chart: helm-charts/airflow-k8s
 #+kubebuilder:scaffold:watch

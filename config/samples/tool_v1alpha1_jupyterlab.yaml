@@ -1,7 +1,7 @@
 apiVersion: tool.analytical-platform.justice/v1alpha1
-kind: Jupyterlabs
+kind: Jupyterlab
 metadata:
-  name: jupyterlabs-sample
+  name: jupyterlab-sample
 spec:
   # Default values copied from <project_dir>/helm-charts/jupyter-lab/values.yaml
   Username: test

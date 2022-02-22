@@ -4,5 +4,4 @@
 resources:
 - bases/tool.analytical-platform.justice_jupyterlabs.yaml
 - bases/tool.analytical-platform.justice_rstudios.yaml
-- bases/tool.analytical-platform.justice_airflows.yaml
 #+kubebuilder:scaffold:crdkustomizeresource
