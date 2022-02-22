@@ -1,0 +1,3 @@
+JupyterLab will be available at the following address:
+
+https://{{ template "host" .}}

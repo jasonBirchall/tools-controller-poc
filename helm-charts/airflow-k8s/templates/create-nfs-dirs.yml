@@ -1,0 +1,42 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-create-nfs-dirs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+spec:
+  template:
+    metadata:
+      name: {{ .Release.Name }}-create-nfs-dirs
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- range . }}
+        - name: {{ . }}
+      {{- end }}
+      {{- end }}
+      containers:
+      - name: "create-nfs-dirs"
+        restart: Never
+        image: "bash"
+        tag: "5.0.2"
+        imagePullPolicy: "IfNotPresent"
+        volumeMounts:
+          - name: {{ .Release.Name }}-storage
+            mountPath: "/tmp/airflow/"
+        command:
+          - "bash"
+        args:
+          - "-cx"
+          - >
+              cd /tmp/airflow &&
+              mkdir -p dags &&
+              mkdir -p logs
+      restartPolicy: Never
+      volumes:
+        - name: {{ .Release.Name }}-storage
+          nfs:
+            server: {{ .Values.airflow.volumes.dags.nfsServer }}
+            path: /

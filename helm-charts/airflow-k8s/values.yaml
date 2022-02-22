@@ -1,0 +1,82 @@
+toolsDomain: "tools.EXAMPLE.COM"
+airflow:
+  secretKey: ""
+  fernetKey: ""
+  auth:
+    type: "AUTH_DB"
+    oauth:
+      consumerSecret: ""
+      consumerKey: ""
+      tokenKey: ""
+      baseUrl: ""
+      authorizeUrl: ""
+      accessTokenUrl: ""
+  image:
+    repository: "593291632749.dkr.ecr.eu-west-1.amazonaws.com/airflow"
+    tag: "1.10.12"
+    pullPolicy: "IfNotPresent"
+    port: "8080"
+  volumes:
+    dags:
+      nfsServer: ""
+      path: "/dags"
+    logs:
+      nfsServer: ""
+      path: "/logs"
+  config:
+    core:
+      parallelism: 32
+    smtp:
+      smtp_host: localhost
+      smtp_starttls: true
+      smtp_ssl: false
+      smtp_user: airflow
+      smtp_password: airflow
+      smtp_port: 25
+      smtp_mail_from: airflow@example.com
+    webserver:
+      enable_proxy_fix: "True"
+  admin:
+    username: ""
+    password: ""
+    email: ""
+gitSync:
+  interval: "180"
+  repository: "https://github.com/ministryofjustice/analytics-platform-airflow-example-dags"
+  branch: "master"
+  image:
+    repository: "quay.io/mojanalytics/git-sync"
+    tag: "0.0.1"
+    pullPolicy: "IfNotPresent"
+postgres:
+  host: ""
+  port: "5432"
+  user: "airflow"
+  password: ""
+  db: "airflow"
+redis:
+  password: "airflow"
+  cluster:
+    enabled: false
+  image:
+    pullPolicy: "IfNotPresent"
+  master:
+    persistence:
+      enabled: false
+  networkPolicy:
+    ## Specifies whether a NetworkPolicy should be created
+    ##
+    enabled: true
+
+    ## The Policy model to apply. When set to false, only pods with the correct
+    ## client label will have network access to the port Redis is listening
+    ## on. When true, Redis will accept connections from any source
+    ## (with the correct destination port).
+    ##
+    allowExternal: false
+
+kube2iam:
+  allowedRoles: ".*"
+  serviceAccountName: ""
+
+imagePullSecrets: []

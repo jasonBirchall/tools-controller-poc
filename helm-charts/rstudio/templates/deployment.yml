@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels:
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    app: "{{ .Chart.Name }}"
+    host: {{ template "unidle_key" . }}
+    unidler-key: {{ template "unidle_key" . }}
+    "mojanalytics.xyz/idleable": "true"
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: "{{ .Chart.Name }}"
+        "mojanalytics.xyz/idleable": "true"
+      annotations:
+        iam.amazonaws.com/role: {{ .Values.aws.iamRole }}
+    spec:
+      priorityClassName: {{ .Chart.Name }}
+      serviceAccountName: {{ .Values.username }}-rstudio      
+      containers:
+        - name: rstudio-auth-proxy
+          image: "{{ .Values.proxy.image.repository }}:{{ .Values.proxy.image.tag }}"
+          imagePullPolicy: {{ .Values.proxy.image.pullPolicy }}
+          ports:
+            - name: proxy
+              containerPort: {{ .Values.proxy.port }}
+          env:
+            - name: AUTH0_TENANT_DOMAIN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: domain
+            - name: AUTH0_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: client_id
+            - name: AUTH0_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: client_secret
+            - name: APP_HOST
+              value: localhost
+            - name: APP_PORT
+              value: {{ quote .Values.rstudio.port }}
+            - name: LOGOUT_URL
+              value: {{ quote .Values.proxy.auth0.logoutUrl }}
+            - name: USERNAME
+              value: {{ quote .Values.username }}
+            - name: REDIRECT_DOMAIN
+              value: {{ quote .Values.redirectdomain }}
+          readinessProbe:
+            httpGet:
+              path: /nginx-health
+              port: proxy
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /nginx-health
+              port: proxy
+            initialDelaySeconds: 20
+            periodSeconds: 10
+          resources:
+{{ toYaml .Values.proxy.resources | indent 12 }}
+
+        - name: r-studio-server
+          image: "{{ .Values.rstudio.image.repository }}:{{ .Values.rstudio.image.tag }}"
+          imagePullPolicy: {{ .Values.rstudio.image.pullPolicy }}
+          ports:
+            - name: rstudio
+              containerPort: {{ .Values.rstudio.port }}
+          env:
+            - name: USER
+              value: "{{ .Values.username }}"
+            - name: RETICULATE_MINICONDA_ENABLED
+              value: "FALSE"
+            - name: AWS_DEFAULT_REGION
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "fullname" . }}
+                  key: aws_default_region
+          readinessProbe:
+            httpGet:
+              path: /
+              port: rstudio
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: rstudio
+            initialDelaySeconds: 30
+            periodSeconds: 5
+          volumeMounts:
+            - name: home
+              mountPath: "/home/{{ .Values.username }}"
+              subPath: {{.Values.username}}/rstudio
+            {{- if .Values.rstudio.renviron.mount }}
+            - name: renviron-configmap
+              mountPath: /home/{{ .Values.username }}/.Renviron
+              subPath: .Renviron
+            {{- end }}
+          resources:
+{{ toYaml .Values.rstudio.resources | indent 12 }}
+
+      volumes:        
+        - name: home
+          persistentVolumeClaim:
+            claimName: efs-home
+        {{- if .Values.rstudio.renviron.mount }}
+        - name: renviron-configmap
+          configMap:
+            name: "renviron"
+            defaultMode: 0644
+        {{- end  }}
+  selector:
+    matchLabels:
+      app: "{{ .Chart.Name }}"

@@ -1,0 +1,5 @@
+Hello!
+
+Airflow is been deployed and will be soon available at
+
+{{ printf "%s.%s" .Release.Name .Values.toolsDomain | lower }}

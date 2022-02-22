@@ -1,0 +1,46 @@
+username: "test"
+toolsDomain: "tools.EXAMPLE.COM"
+aws:
+  iamRole: "test-role"
+  defaultRegion: "eu-west-1"
+  accountID: "593291632749"
+proxy:
+  port: 3000
+  auth0:
+    clientSecret: ""
+    clientId: ""
+    domain: "AUTH0_USER.eu.auth0.com"
+    logoutUrl: "https://controlpanel.services.alpha.mojanalytics.xyz/"
+  image:
+    repository: 593291632749.dkr.ecr.eu-west-1.amazonaws.com/nginx-proxy
+    tag: "0.0.27"
+    pullPolicy: "IfNotPresent"
+  resources:
+    limits:
+      cpu: 1
+      memory: 128Mi
+    requests:
+      cpu: 0.5
+      memory: 128Mi
+rstudio:
+  port: "8787"
+  image:
+    repository: 593291632749.dkr.ecr.eu-west-1.amazonaws.com/rstudio
+    tag: "4.1.2-3"
+    pullPolicy: "IfNotPresent"
+    # init option allows you to run an init container that does the setup of the conda environment
+    # this is quite slow and if it was run as part of the main container then it would cause problems.
+    # This exists here because you might want to downgrade to an older image, which doesn't take the arg
+    # to the ./start.sh script
+    init: false
+  renviron:
+    mount: false
+    # Whether to mount a .Renviron file in RStudio or not to set environment variables needed for AWS Authentication on EKS
+  resources:
+    limits:
+      cpu: 1.5
+      memory: 12Gi
+    requests:
+      cpu: 1.5
+      memory: 12Gi
+redirectdomain: "tools.alpha.mojanalytics.xyz"

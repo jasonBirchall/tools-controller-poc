@@ -1,0 +1,49 @@
+apiVersion: tool.analytical-platform.justice/v1alpha1
+kind: Rstudio
+metadata:
+  name: rstudio-sample
+spec:
+  # Default values copied from <project_dir>/helm-charts/rstudio/values.yaml
+  aws:
+    accountID: "593291632749"
+    defaultRegion: eu-west-1
+    iamRole: test-role
+  proxy:
+    auth0:
+      clientId: ""
+      clientSecret: ""
+      domain: AUTH0_USER.eu.auth0.com
+      logoutUrl: https://controlpanel.services.alpha.mojanalytics.xyz/
+    image:
+      pullPolicy: IfNotPresent
+      repository: 593291632749.dkr.ecr.eu-west-1.amazonaws.com/nginx-proxy
+      tag: 0.0.27
+    port: 3000
+    resources:
+      limits:
+        cpu: 1
+        memory: 128Mi
+      requests:
+        cpu: 0.5
+        memory: 128Mi
+  redirectdomain: tools.alpha.mojanalytics.xyz
+  rstudio:
+    image:
+      init: false
+      pullPolicy: IfNotPresent
+      repository: 593291632749.dkr.ecr.eu-west-1.amazonaws.com/rstudio
+      tag: 4.1.2-3
+    port: "8787"
+    renviron:
+      mount: false
+    resources:
+      limits:
+        cpu: 1.5
+        memory: 12Gi
+      requests:
+        cpu: 1.5
+        memory: 12Gi
+  toolsDomain: tools.EXAMPLE.COM
+  username: test
+  
+  

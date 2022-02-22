@@ -1,0 +1,99 @@
+#  Licensed to the Apache Software Foundation (ASF) under one   *
+#  or more contributor license agreements.  See the NOTICE file *
+#  distributed with this work for additional information        *
+#  regarding copyright ownership.  The ASF licenses this file   *
+#  to you under the Apache License, Version 2.0 (the            *
+#  "License"); you may not use this file except in compliance   *
+#  with the License.  You may obtain a copy of the License at   *
+#                                                               *
+#    http://www.apache.org/licenses/LICENSE-2.0                 *
+#                                                               *
+#  Unless required by applicable law or agreed to in writing,   *
+#  software distributed under the License is distributed on an  *
+#  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       *
+#  KIND, either express or implied.  See the License for the    *
+#  specific language governing permissions and limitations      *
+#  under the License.                                           *
+
+# The backing volume can be anything you want, it just needs to be `ReadWriteOnce`
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-dags
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    volume.beta.kubernetes.io/storage-class: nfs
+  labels:
+    app: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    name: {{ .Release.Name }}-dags
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.airflow.volumes.dags.nfsServer }}
+    path:  {{ .Values.airflow.volumes.dags.path }}
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-logs
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    volume.beta.kubernetes.io/storage-class: nfs
+  labels:
+    app: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    name: {{ .Release.Name }}-logs
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    server: {{ .Values.airflow.volumes.logs.nfsServer }}
+    path: {{ .Values.airflow.volumes.logs.path }}
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-dags
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    name: {{ .Release.Name }}-dags
+  annotations:
+    volume.beta.kubernetes.io/storage-class: nfs
+spec:
+  accessModes:
+    - ReadWriteMany
+  selector:
+    matchLabels:
+      name: {{ .Release.Name }}-dags
+  resources:
+    requests:
+      storage: 10Gi
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: {{ .Release.Name }}-logs
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    name: {{ .Release.Name }}-logs
+  annotations:
+    volume.beta.kubernetes.io/storage-class: nfs
+spec:
+  accessModes:
+    - ReadWriteMany
+  selector:
+    matchLabels:
+      name: {{ .Release.Name }}-logs
+  resources:
+    requests:
+      storage: 10Gi
