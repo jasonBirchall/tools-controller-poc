@@ -19,10 +19,11 @@ package controllers
 import (
 	"context"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
+	ctrllog "sigs.k8s.io/controller-runtime/pkg/log"
 
 	toolv1alpha1 "github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 )
@@ -47,10 +48,22 @@ type ToolsReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
 func (r *ToolsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	log := ctrllog.FromContext(ctx)
 
 	// TODO(user): your logic here
+	// Get resource
+	tools := &toolv1alpha1.Tools{}
+	err := r.Get(ctx, req.NamespacedName, tools)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Object not found, return.  Created objects are automatically garbage collected.
+			// For additional cleanup logic use finalizers.
+			log.Info("tools resource not found")
+			return ctrl.Result{}, nil
+		}
+	}
 
+	log.Info("tools resource not found")
 	return ctrl.Result{}, nil
 }
 

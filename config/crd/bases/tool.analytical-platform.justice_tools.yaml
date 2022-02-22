@@ -35,13 +35,40 @@ spec:
           spec:
             description: ToolsSpec defines the desired state of Tools
             properties:
-              foo:
+              chartName:
+                type: string
+              chartPath:
+                type: string
+              chartVersion:
+                type: string
+              id:
+                type: integer
+              image:
+                type: string
+              name:
                 description: Foo is an example field of Tools. Edit tools_types.go
                   to remove/update
+                type: string
+              repository:
+                type: string
+              version:
                 type: string
             type: object
           status:
             description: ToolsStatus defines the observed state of Tools
+            properties:
+              latestChartVersion:
+                type: string
+              latestChartVersionId:
+                type: integer
+              latestVersion:
+                type: string
+              latestVersionId:
+                type: integer
+              previousVersions:
+                items:
+                  type: string
+                type: array
             type: object
         type: object
     served: true
