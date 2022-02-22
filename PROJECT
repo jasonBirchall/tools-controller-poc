@@ -1,25 +1,16 @@
-domain: tools
+domain: analytical-platform.justice
 layout:
-- go.kubebuilder.io/v3
+- helm.sdk.operatorframework.io/v1
+plugins:
+  manifests.sdk.operatorframework.io/v2: {}
+  scorecard.sdk.operatorframework.io/v2: {}
 projectName: tools-controller-poc
-repo: github.com/jasonbirchall/tools-controller-poc
 resources:
 - api:
     crdVersion: v1
     namespaced: true
-  controller: true
-  domain: tools
-  group: ap-tools
-  kind: Tools
-  path: github.com/jasonbirchall/tools-controller-poc/api/v1
-  version: v1
-- api:
-    crdVersion: v1
-    namespaced: true
-  controller: true
-  domain: tools
-  group: ap-tools
-  kind: UserTools
-  path: github.com/jasonbirchall/tools-controller-poc/api/v1
-  version: v1
+  domain: analytical-platform.justice
+  group: tools
+  kind: Jupyterlabs
+  version: v1alpha1
 version: "3"

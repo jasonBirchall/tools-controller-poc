@@ -1,14 +1,42 @@
----
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   name: manager-role
 rules:
+##
+## Base operator rules
+##
+# We need to get namespaces so the operator can read namespaces to ensure they exist
 - apiGroups:
-  - ap-tools.tools
+  - ""
   resources:
-  - tools
+  - namespaces
+  verbs:
+  - get
+# We need to manage Helm release secrets
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - "*"
+# We need to create events on CRs about things happening during reconciliation
+- apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+
+##
+## Rules for tools.analytical-platform.justice/v1alpha1, Kind: Jupyterlabs
+##
+- apiGroups:
+  - tools.analytical-platform.justice
+  resources:
+  - jupyterlabs
+  - jupyterlabs/status
+  - jupyterlabs/finalizers
   verbs:
   - create
   - delete
@@ -17,79 +45,32 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - ap-tools.tools
+- verbs:
+  - "*"
+  apiGroups:
+  - ""
   resources:
-  - tools/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - ap-tools.tools
+  - "configmaps"
+  - "secrets"
+  - "serviceaccounts"
+  - "services"
+- verbs:
+  - "*"
+  apiGroups:
+  - "apps"
   resources:
-  - tools/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - ap-tools.tools
+  - "deployments"
+- verbs:
+  - "*"
+  apiGroups:
+  - "batch"
   resources:
-  - usertools
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ap-tools.tools
+  - "jobs"
+- verbs:
+  - "*"
+  apiGroups:
+  - "extensions"
   resources:
-  - usertools/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - ap-tools.tools
-  resources:
-  - usertools/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - apps
-  resources:
-  - deployments
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - ingress
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - apps
-  resources:
-  - services
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
+  - "ingresses"
+
+#+kubebuilder:scaffold:rules

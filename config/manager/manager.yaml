@@ -27,10 +27,9 @@ spec:
       securityContext:
         runAsNonRoot: true
       containers:
-      - command:
-        - /manager
-        args:
+      - args:
         - --leader-elect
+        - --leader-election-id=tools-controller-poc
         image: controller:latest
         name: manager
         securityContext:
