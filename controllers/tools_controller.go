@@ -19,7 +19,12 @@ package controllers
 import (
 	"context"
 
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -36,6 +41,8 @@ type ToolsReconciler struct {
 //+kubebuilder:rbac:groups=tool.analytical-platform.justice,resources=tools,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=tool.analytical-platform.justice,resources=tools/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=tool.analytical-platform.justice,resources=tools/finalizers,verbs=update
+// +kubebuilder:rbac:groups=apps,resources=deployments/finalizers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -49,14 +56,103 @@ type ToolsReconciler struct {
 func (r *ToolsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	// TODO(user): your logic here
+	tool := &toolv1alpha1.Tools{}
+	err := r.Get(ctx, req.NamespacedName, tool)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			// Object not found, return.  Created objects are automatically garbage collected.
+			// For additional cleanup logic use finalizers.
+			return ctrl.Result{}, nil
+		}
+		return ctrl.Result{}, err
+	}
+
+	// Check if the tool already exists
+	namespace := tool.Namespace
+	for _, t := range tool.Spec.Tool {
+		found := &appsv1.Deployment{}
+		err = r.Get(ctx, types.NamespacedName{Name: t.Name, Namespace: namespace}, found)
+		if err != nil && errors.IsNotFound(err) {
+			dep := r.deploymentForTool(t.Name, namespace, t.Version, t.Image)
+			log.Log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+
+			err = r.Create(ctx, dep)
+			if err != nil {
+				log.Log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+				return ctrl.Result{}, err
+			}
+
+			return ctrl.Result{Requeue: true}, nil
+		} else if err != nil {
+			log.Log.Error(err, "Failed to get Deployment")
+			return ctrl.Result{}, err
+		}
+	}
 
 	return ctrl.Result{}, nil
+}
+
+func (r *ToolsReconciler) deploymentForTool(name, namespace, version, image string) *appsv1.Deployment {
+	switch name {
+	case "jupyter":
+		return r.jupyterDeploymentForTool(namespace, version, image)
+	case "rstudio":
+		return r.jupyterDeploymentForTool(namespace, version, image)
+	case "airflow":
+		return r.jupyterDeploymentForTool(namespace, version, image)
+	default:
+		return nil
+	}
+}
+
+func (r *ToolsReconciler) airflowDeploymentForTool(namespace, version, image string) *appsv1.Deployment {
+	return nil
+}
+func (r *ToolsReconciler) rstudioDeploymentForTool(namespace, version, image string) *appsv1.Deployment {
+	return nil
+}
+
+func (r *ToolsReconciler) jupyterDeploymentForTool(namespace, version, image string) *appsv1.Deployment {
+	return &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "jupyter",
+			Namespace: namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"app": "jupyter",
+				},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"app": "jupyter",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "jupyter",
+							Image: "jupyter/minimal-notebook",
+							Ports: []corev1.ContainerPort{
+								{
+									Name:          "http",
+									ContainerPort: 8888,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ToolsReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&toolv1alpha1.Tools{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }

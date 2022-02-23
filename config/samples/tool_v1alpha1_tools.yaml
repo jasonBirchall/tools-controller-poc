@@ -1,13 +1,13 @@
 apiVersion: tool.analytical-platform.justice/v1alpha1
 kind: Tools
 metadata:
-  name: tools-sample
+  name: user-jason
 spec:
   # TODO(user): Add fields here
   tool:
-    - name: tool-sample
+    - name: jupyter
       version: "1.0.0"
       image: foo
-    - name: tool-sample2
-      version: "1.0.2"
-      image: foo-bar
+    # - name: rstudio
+    #   version: "1.0.2"
+    #   image: foo-bar
