@@ -1,16 +1,19 @@
 domain: analytical-platform.justice
 layout:
-- helm.sdk.operatorframework.io/v1
+- go.kubebuilder.io/v3
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: tools-controller-poc
+repo: github.com/jasonbirchall/tools-controller-poc
 resources:
 - api:
     crdVersion: v1
     namespaced: true
+  controller: true
   domain: analytical-platform.justice
-  group: tools
-  kind: Jupyterlabs
+  group: tool
+  kind: Tools
+  path: github.com/jasonbirchall/tools-controller-poc/api/v1alpha1
   version: v1alpha1
 version: "3"

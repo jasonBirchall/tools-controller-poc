@@ -2,20 +2,23 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: jupyterlabs.tools.analytical-platform.justice
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.8.0
+  creationTimestamp: null
+  name: tools.tool.analytical-platform.justice
 spec:
-  group: tools.analytical-platform.justice
+  group: tool.analytical-platform.justice
   names:
-    kind: Jupyterlabs
-    listKind: JupyterlabsList
-    plural: jupyterlabs
-    singular: jupyterlabs
+    kind: Tools
+    listKind: ToolsList
+    plural: tools
+    singular: tools
   scope: Namespaced
   versions:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Jupyterlabs is the Schema for the jupyterlabs API
+        description: Tools is the Schema for the tools API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -30,15 +33,35 @@ spec:
           metadata:
             type: object
           spec:
-            description: Spec defines the desired state of Jupyterlabs
+            description: ToolsSpec defines the desired state of Tools
+            properties:
+              tool:
+                description: Foo is an example field of Tools. Edit tools_types.go
+                  to remove/update
+                items:
+                  properties:
+                    image:
+                      type: string
+                    name:
+                      type: string
+                    version:
+                      type: string
+                  type: object
+                type: array
+            required:
+            - tool
             type: object
-            x-kubernetes-preserve-unknown-fields: true
           status:
-            description: Status defines the observed state of Jupyterlabs
+            description: ToolsStatus defines the observed state of Tools
             type: object
-            x-kubernetes-preserve-unknown-fields: true
         type: object
     served: true
     storage: true
     subresources:
       status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

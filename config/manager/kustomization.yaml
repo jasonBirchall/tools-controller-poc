@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: json0/tools-controller-poc
-  newTag: latest
+  newTag: 0.0.1

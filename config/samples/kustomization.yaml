@@ -1,4 +1,4 @@
 ## Append samples you want in your CSV to this file as resources ##
 resources:
-- tools_v1alpha1_jupyterlabs.yaml
+- tool_v1alpha1_tools.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples
