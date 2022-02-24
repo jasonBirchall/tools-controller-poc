@@ -46,10 +46,6 @@ type ToolsReconciler struct {
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the Tools object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
@@ -73,12 +69,25 @@ func (r *ToolsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 		found := &appsv1.Deployment{}
 		err = r.Get(ctx, types.NamespacedName{Name: t.Name, Namespace: namespace}, found)
 		if err != nil && errors.IsNotFound(err) {
-			dep := r.deploymentForTool(t.Name, namespace, t.Version, t.Image)
+			dep, svc := r.deploymentForTool(t.Name, namespace, t.Version, t.Image)
 			log.Log.Info("Creating a new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 
 			err = r.Create(ctx, dep)
 			if err != nil {
 				log.Log.Error(err, "Failed to create new Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
+				return ctrl.Result{}, err
+			}
+
+			log.Log.Info("Creating a new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+			err = r.Create(ctx, svc)
+			if err != nil {
+				log.Log.Error(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+				return ctrl.Result{}, err
+			}
+
+			err = ctrl.SetControllerReference(tool, dep, r.Scheme)
+			if err != nil {
+				log.Log.Error(err, "Failed to set controller reference on Deployment", "Deployment.Namespace", dep.Namespace, "Deployment.Name", dep.Name)
 				return ctrl.Result{}, err
 			}
 
@@ -92,7 +101,7 @@ func (r *ToolsReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl
 	return ctrl.Result{}, nil
 }
 
-func (r *ToolsReconciler) deploymentForTool(name, namespace, version, image string) *appsv1.Deployment {
+func (r *ToolsReconciler) deploymentForTool(name, namespace, version, image string) (*appsv1.Deployment, *corev1.Service) {
 	switch name {
 	case "jupyter":
 		return r.jupyterDeploymentForTool(namespace, version, image)
@@ -101,7 +110,7 @@ func (r *ToolsReconciler) deploymentForTool(name, namespace, version, image stri
 	case "airflow":
 		return r.jupyterDeploymentForTool(namespace, version, image)
 	default:
-		return nil
+		return nil, nil
 	}
 }
 
@@ -112,8 +121,8 @@ func (r *ToolsReconciler) rstudioDeploymentForTool(namespace, version, image str
 	return nil
 }
 
-func (r *ToolsReconciler) jupyterDeploymentForTool(namespace, version, image string) *appsv1.Deployment {
-	return &appsv1.Deployment{
+func (r *ToolsReconciler) jupyterDeploymentForTool(namespace, version, image string) (*appsv1.Deployment, *corev1.Service) {
+	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "jupyter",
 			Namespace: namespace,
@@ -147,6 +156,23 @@ func (r *ToolsReconciler) jupyterDeploymentForTool(namespace, version, image str
 			},
 		},
 	}
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "jupyter",
+			Namespace: namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name: "http",
+					Port: 8888,
+				},
+			},
+			Selector: deploy.Spec.Template.Labels,
+		},
+	}
+
+	return deploy, service
 }
 
 // SetupWithManager sets up the controller with the Manager.
