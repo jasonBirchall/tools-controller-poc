@@ -23,48 +23,43 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// ToolsSpec defines the desired state of Tools
-type ToolsSpec struct {
+// JupyterlabSpec defines the desired state of Jupyterlab
+type JupyterlabSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of Tools. Edit tools_types.go to remove/update
-	Tool []Tool `json:"tool"`
+	// Foo is an example field of Jupyterlab. Edit jupyterlab_types.go to remove/update
+	Size int32 `json:"size"`
 }
 
-type Tool struct {
-	Name    string `json:"name,omitempty"`
-	Version string `json:"version,omitempty"`
-	Image   string `json:"image,omitempty"`
-}
-
-// ToolsStatus defines the observed state of Tools
-type ToolsStatus struct {
+// JupyterlabStatus defines the observed state of Jupyterlab
+type JupyterlabStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Nodes []string `json:"nodes"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
 
-// Tools is the Schema for the tools API
-type Tools struct {
+// Jupyterlab is the Schema for the jupyterlabs API
+type Jupyterlab struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   ToolsSpec   `json:"spec,omitempty"`
-	Status ToolsStatus `json:"status,omitempty"`
+	Spec   JupyterlabSpec   `json:"spec,omitempty"`
+	Status JupyterlabStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 
-// ToolsList contains a list of Tools
-type ToolsList struct {
+// JupyterlabList contains a list of Jupyterlab
+type JupyterlabList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Items           []Tools `json:"items"`
+	Items           []Jupyterlab `json:"items"`
 }
 
 func init() {
-	SchemeBuilder.Register(&Tools{}, &ToolsList{})
+	SchemeBuilder.Register(&Jupyterlab{}, &JupyterlabList{})
 }

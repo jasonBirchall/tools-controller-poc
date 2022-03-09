@@ -1,4 +1,4 @@
-domain: analytical-platform.justice
+domain: analytical-platform.justice.gov.uk
 layout:
 - go.kubebuilder.io/v3
 plugins:
@@ -11,9 +11,9 @@ resources:
     crdVersion: v1
     namespaced: true
   controller: true
-  domain: analytical-platform.justice
-  group: tool
-  kind: Tools
+  domain: analytical-platform.justice.gov.uk
+  group: tools
+  kind: Jupyterlab
   path: github.com/jasonbirchall/tools-controller-poc/api/v1alpha1
   version: v1alpha1
 version: "3"

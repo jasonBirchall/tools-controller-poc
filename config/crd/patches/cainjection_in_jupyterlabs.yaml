@@ -4,4 +4,4 @@ kind: CustomResourceDefinition
 metadata:
   annotations:
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
-  name: tools.tool.analytical-platform.justice
+  name: jupyterlabs.tools.analytical-platform.justice.gov.uk

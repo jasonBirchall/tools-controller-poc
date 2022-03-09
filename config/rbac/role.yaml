@@ -25,9 +25,9 @@ rules:
   - get
   - list
 - apiGroups:
-  - tool.analytical-platform.justice
+  - tools.analytical-platform.justice.gov.uk
   resources:
-  - tools
+  - jupyterlabs
   verbs:
   - create
   - delete
@@ -37,15 +37,15 @@ rules:
   - update
   - watch
 - apiGroups:
-  - tool.analytical-platform.justice
+  - tools.analytical-platform.justice.gov.uk
   resources:
-  - tools/finalizers
+  - jupyterlabs/finalizers
   verbs:
   - update
 - apiGroups:
-  - tool.analytical-platform.justice
+  - tools.analytical-platform.justice.gov.uk
   resources:
-  - tools/status
+  - jupyterlabs/status
   verbs:
   - get
   - patch

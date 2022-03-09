@@ -31,7 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	toolv1alpha1 "github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
+	toolsv1alpha1 "github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 	"github.com/jasonbirchall/tools-controller-poc/controllers"
 	//+kubebuilder:scaffold:imports
 )
@@ -44,7 +44,7 @@ var (
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
-	utilruntime.Must(toolv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(toolsv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -71,18 +71,18 @@ func main() {
 		Port:                   9443,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
-		LeaderElectionID:       "a401e868.analytical-platform.justice",
+		LeaderElectionID:       "a401e868.analytical-platform.justice.gov.uk",
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
 	}
 
-	if err = (&controllers.ToolsReconciler{
+	if err = (&controllers.JupyterlabReconciler{
 		Client: mgr.GetClient(),
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Tools")
+		setupLog.Error(err, "unable to create controller", "controller", "Jupyterlab")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder

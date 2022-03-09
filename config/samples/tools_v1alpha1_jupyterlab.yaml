@@ -1,0 +1,7 @@
+apiVersion: tools.analytical-platform.justice.gov.uk/v1alpha1
+kind: Jupyterlab
+metadata:
+  name: jupyterlab-sample
+spec:
+  size: 1
+  # TODO(user): Add fields here
