@@ -45,11 +45,11 @@ type JupyterlabReconciler struct {
 //+kubebuilder:rbac:groups=tools.analytical-platform.justice.gov.uk,resources=jupyterlabs/finalizers,verbs=update
 
 // +kubebuilder:rbac:groups=apps,resources=deployments/finalizers,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
-// TODO(jason): Modify the Reconcile function to compare the state specified by
 // the Jupyterlab object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
@@ -72,6 +72,7 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	deploy := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: jlab.Name, Namespace: jlab.Namespace}, deploy)
+	log.Log.Info("Creating a new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
 	if err != nil && errors.IsNotFound(err) {
 		dep := r.deployJupyterLabs(jlab)
 		err = r.Create(ctx, dep)
@@ -92,6 +93,7 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 func (r *JupyterlabReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&toolsv1alpha1.Jupyterlab{}).
+		Owns(&appsv1.Deployment{}).
 		Complete(r)
 }
 
