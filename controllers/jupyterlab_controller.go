@@ -100,6 +100,16 @@ func (r *JupyterlabReconciler) SetupWithManager(mgr ctrl.Manager) error {
 func (r *JupyterlabReconciler) deployJupyterLabs(m *v1alpha1.Jupyterlab) *appsv1.Deployment {
 	ls := labelsForJupyterlab(m.Name)
 	replicas := m.Spec.Size
+	image := m.Spec.Image
+	version := m.Spec.Version
+
+	if image == "" {
+		image = "jupyterlab"
+	}
+
+	if version == "" {
+		version = "latest"
+	}
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -119,7 +129,7 @@ func (r *JupyterlabReconciler) deployJupyterLabs(m *v1alpha1.Jupyterlab) *appsv1
 					Containers: []corev1.Container{
 						{
 							Name:  "jupyterlab",
-							Image: "quay.io/aaziz/jupyterlab:latest",
+							Image: image + ":" + version,
 							Ports: []corev1.ContainerPort{
 								{
 									Protocol:      corev1.ProtocolTCP,

@@ -29,7 +29,9 @@ type JupyterlabSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of Jupyterlab. Edit jupyterlab_types.go to remove/update
-	Size int32 `json:"size"`
+	Size    int32  `json:"size"`
+	Version string `json:"version"`
+	Image   string `json:"image"`
 }
 
 // JupyterlabStatus defines the observed state of Jupyterlab

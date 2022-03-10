@@ -4,4 +4,5 @@ metadata:
   name: jupyterlab-sample
 spec:
   size: 1
-  # TODO(user): Add fields here
+  image: jupyter/datascience-notebook
+  version: lab-3.1.11
