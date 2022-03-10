@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"reflect"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -46,8 +47,10 @@ type JupyterlabReconciler struct {
 
 // +kubebuilder:rbac:groups=apps,resources=deployments/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;
+
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
+
+// +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -105,6 +108,27 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
+	// Update the jupyterlab status with pod names
+	podList := &corev1.PodList{}
+	listOpts := []client.ListOption{
+		client.InNamespace(jlab.Namespace),
+		client.MatchingLabels(labelsForJupyterlab(jlab.Name)),
+	}
+	if err = r.List(ctx, podList, listOpts...); err != nil {
+		log.Log.Error(err, "Failed to list pods", "JupyterLab.Namespace", jlab.Namespace, "JupyterLab.Name", jlab.Name)
+		return ctrl.Result{}, err
+	}
+	podNames := getPodNames(podList.Items)
+
+	if !reflect.DeepEqual(podNames, jlab.Status.Nodes) {
+		jlab.Status.Nodes = podNames
+		err := r.Status().Update(ctx, jlab)
+		if err != nil {
+			log.Log.Error(err, "Failed to update Jupyterlab status")
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -115,6 +139,15 @@ func (r *JupyterlabReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
 		Complete(r)
+}
+
+func getPodNames(pods []corev1.Pod) []string {
+	var podNames []string
+	for _, pod := range pods {
+		podNames = append(podNames, pod.Name)
+	}
+
+	return podNames
 }
 
 func (r *JupyterlabReconciler) serviceJupyterLabs(m *v1alpha1.Jupyterlab) *corev1.Service {
