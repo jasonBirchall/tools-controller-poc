@@ -47,6 +47,7 @@ type JupyterlabReconciler struct {
 // +kubebuilder:rbac:groups=apps,resources=deployments/finalizers,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;
+// +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -86,6 +87,24 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
+	service := &corev1.Service{}
+	err = r.Get(ctx, types.NamespacedName{Name: jlab.Name, Namespace: jlab.Namespace}, service)
+	if err != nil && errors.IsNotFound(err) {
+		svc := r.serviceJupyterLabs(jlab)
+		log.Log.Info("Creating a new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+
+		err = r.Create(ctx, svc)
+		if err != nil {
+			log.Log.Error(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+			return ctrl.Result{}, err
+		}
+
+		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		log.Log.Error(err, "Failed to get Service")
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -94,7 +113,33 @@ func (r *JupyterlabReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&toolsv1alpha1.Jupyterlab{}).
 		Owns(&appsv1.Deployment{}).
+		Owns(&corev1.Service{}).
 		Complete(r)
+}
+
+func (r *JupyterlabReconciler) serviceJupyterLabs(m *v1alpha1.Jupyterlab) *corev1.Service {
+	port := corev1.ServicePort{
+		Name: "jupyterlab",
+		Port: 8888,
+	}
+
+	selectors := labelsForJupyterlab(m.Name)
+	service := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+	}
+
+	ports := []corev1.ServicePort{port}
+	service.Spec = corev1.ServiceSpec{
+		Ports:    ports,
+		Selector: selectors,
+	}
+
+	// Set JupyterLab instance as the owner and controller
+	ctrl.SetControllerReference(m, service, r.Scheme)
+	return service
 }
 
 func (r *JupyterlabReconciler) deployJupyterLabs(m *v1alpha1.Jupyterlab) *appsv1.Deployment {
@@ -151,4 +196,10 @@ func (r *JupyterlabReconciler) deployJupyterLabs(m *v1alpha1.Jupyterlab) *appsv1
 // belonging to the given jupyterlab CR name.
 func labelsForJupyterlab(name string) map[string]string {
 	return map[string]string{"app": "jupyterlab", "jupyterlab_cr": name}
+}
+
+func selectorsForService(name string) map[string]string {
+	return map[string]string{
+		"app": name,
+	}
 }
