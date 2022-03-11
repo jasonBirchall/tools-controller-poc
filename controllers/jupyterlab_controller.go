@@ -160,11 +160,12 @@ func (r *JupyterlabReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&toolsv1alpha1.Jupyterlab{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
+		Owns(&v1beta1.Ingress{}).
 		Complete(r)
 }
 
 func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab) *v1beta1.Ingress {
-	return &v1beta1.Ingress{
+	ingress := &v1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jlab.Name,
 			Namespace: jlab.Namespace,
@@ -194,6 +195,8 @@ func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab
 			},
 		},
 	}
+	ctrl.SetControllerReference(jlab, ingress, r.Scheme)
+	return ingress
 }
 
 func getPodNames(pods []corev1.Pod) []string {
