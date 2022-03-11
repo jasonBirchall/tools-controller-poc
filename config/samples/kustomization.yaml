@@ -2,4 +2,5 @@
 resources:
 - tools_v1alpha1_jupyterlab.yaml
 - tools_v1alpha1_rstudio.yaml
+- tools_v1alpha1_airflow.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

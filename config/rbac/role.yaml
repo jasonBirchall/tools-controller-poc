@@ -64,6 +64,32 @@ rules:
 - apiGroups:
   - tools.analytical-platform.justice.gov.uk
   resources:
+  - airflows
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - airflows/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - airflows/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
   - jupyterlabs
   verbs:
   - create

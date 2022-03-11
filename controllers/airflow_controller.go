@@ -18,12 +18,10 @@ package controllers
 
 import (
 	"context"
-	"reflect"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/api/extensions/v1beta1"
-
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -38,48 +36,44 @@ import (
 	toolsv1alpha1 "github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 )
 
-// RStudioReconciler reconciles a RStudio object
-type RStudioReconciler struct {
+// AirflowReconciler reconciles a Airflow object
+type AirflowReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=tools.analytical-platform.justice.gov.uk,resources=rstudios,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=tools.analytical-platform.justice.gov.uk,resources=rstudios/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=tools.analytical-platform.justice.gov.uk,resources=rstudios/finalizers,verbs=update
+//+kubebuilder:rbac:groups=tools.analytical-platform.justice.gov.uk,resources=airflows,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=tools.analytical-platform.justice.gov.uk,resources=airflows/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=tools.analytical-platform.justice.gov.uk,resources=airflows/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
 // TODO(jason): Modify the Reconcile function to compare the state specified by
-// the RStudio object against the actual cluster state, and then
+// the Airflow object against the actual cluster state, and then
 // perform operations to make the cluster state reflect the state specified by
 // the user.
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.11.0/pkg/reconcile
-func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+func (r *AirflowReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	rstudio := &toolsv1alpha1.RStudio{}
-	err := r.Get(ctx, req.NamespacedName, rstudio)
+	airflow := &v1alpha1.Airflow{}
+	err := r.Get(ctx, req.NamespacedName, airflow)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			// Object not found, return.  Created objects are automatically garbage collected.
-			// For additional cleanup logic use finalizers.
-			log.Log.Info("Rstudio resource not found")
+			log.Log.Info("Airflow resource not found")
 			return ctrl.Result{}, nil
 		}
-		return ctrl.Result{Requeue: true}, err
-	} else if err != nil {
-		log.Log.Error(err, "Failed to get Jupyterlab resource")
-		return ctrl.Result{}, err
+		log.Log.Error(err, "Failed to get Airflow resource")
+		return ctrl.Result{}, nil
 	}
 
 	deploy := &appsv1.Deployment{}
-	err = r.Get(ctx, types.NamespacedName{Name: rstudio.Name, Namespace: rstudio.Namespace}, deploy)
+	err = r.Get(ctx, types.NamespacedName{Name: airflow.Name, Namespace: airflow.Namespace}, deploy)
 	log.Log.Info("Creating a new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
 	if err != nil && errors.IsNotFound(err) {
-		dep := r.deployRstudio(rstudio)
+		dep := r.deployAirflow(airflow)
 		err = r.Create(ctx, dep)
 		if err != nil {
 			log.Log.Error(err, "Failed to create a new deployment")
@@ -92,9 +86,9 @@ func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	}
 
 	service := &corev1.Service{}
-	err = r.Get(ctx, types.NamespacedName{Name: rstudio.Name, Namespace: rstudio.Namespace}, service)
+	err = r.Get(ctx, types.NamespacedName{Name: airflow.Name, Namespace: airflow.Namespace}, service)
 	if err != nil && errors.IsNotFound(err) {
-		svc := r.serviceRstudio(rstudio)
+		svc := r.serviceAirflow(airflow)
 		log.Log.Info("Creating a new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
 
 		err = r.Create(ctx, svc)
@@ -109,32 +103,11 @@ func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		return ctrl.Result{}, err
 	}
 
-	// Update the rstudio status with pod names
-	podList := &corev1.PodList{}
-	listOpts := []client.ListOption{
-		client.InNamespace(rstudio.Namespace),
-		client.MatchingLabels(labelsForJupyterlab(rstudio.Name)),
-	}
-	if err = r.List(ctx, podList, listOpts...); err != nil {
-		log.Log.Error(err, "Failed to list pods", "JupyterLab.Namespace", rstudio.Namespace, "JupyterLab.Name", rstudio.Name)
-		return ctrl.Result{}, err
-	}
-	podNames := getPodNames(podList.Items)
-
-	if !reflect.DeepEqual(podNames, rstudio.Status.Nodes) {
-		rstudio.Status.Nodes = podNames
-		err := r.Status().Update(ctx, rstudio)
-		if err != nil {
-			log.Log.Error(err, "Failed to update Jupyterlab status")
-			return ctrl.Result{}, err
-		}
-	}
-
 	// Check for ingress resource
 	ingress := &v1beta1.Ingress{}
-	err = r.Get(ctx, types.NamespacedName{Name: rstudio.Name, Namespace: rstudio.Namespace}, ingress)
+	err = r.Get(ctx, types.NamespacedName{Name: airflow.Name, Namespace: airflow.Namespace}, ingress)
 	if err != nil && errors.IsNotFound(err) {
-		ing := r.ingressRstudio(rstudio)
+		ing := r.ingressAirflow(airflow)
 		log.Log.Info("Creating a new Ingress", "Ingress.Namespace", ing.Namespace, "Ingress.Name", ing.Name)
 		err = r.Create(ctx, ing)
 		if err != nil {
@@ -151,81 +124,13 @@ func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *RStudioReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *AirflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&toolsv1alpha1.RStudio{}).
+		For(&toolsv1alpha1.Airflow{}).
 		Complete(r)
 }
 
-func (r *RStudioReconciler) deployRstudio(m *v1alpha1.RStudio) *appsv1.Deployment {
-	labels := labelsForRStudio(m.Name)
-	image := m.Spec.Image
-	if image == "" {
-		image = "rocker/rstudio"
-	}
-	dep := &appsv1.Deployment{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name,
-			Namespace: m.Namespace,
-		},
-		Spec: appsv1.DeploymentSpec{
-			Selector: &metav1.LabelSelector{
-				MatchLabels: labels,
-			},
-			Template: corev1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: labels,
-				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "rstudio",
-							Image: image,
-							Ports: []corev1.ContainerPort{
-								{
-									ContainerPort: 8787,
-									Protocol:      corev1.ProtocolTCP,
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-	// Set RStudio instance as the owner and controller
-	controllerutil.SetControllerReference(m, dep, r.Scheme)
-	return dep
-}
-
-func labelsForRStudio(name string) map[string]string {
-	return map[string]string{"app": "Rstudio", "Rstudio_cr": name}
-}
-
-func (r *RStudioReconciler) serviceRstudio(m *v1alpha1.RStudio) *corev1.Service {
-	labels := labelsForRStudio(m.Name)
-	svc := &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      m.Name,
-			Namespace: m.Namespace,
-		},
-		Spec: corev1.ServiceSpec{
-			Selector: labels,
-			Ports: []corev1.ServicePort{
-				{
-					Protocol:   corev1.ProtocolTCP,
-					Port:       8787,
-					TargetPort: intstr.FromInt(8787),
-				},
-			},
-		},
-	}
-	// Set RStudio instance as the owner and controller
-	controllerutil.SetControllerReference(m, svc, r.Scheme)
-	return svc
-}
-
-func (r *RStudioReconciler) ingressRstudio(m *toolsv1alpha1.RStudio) *v1beta1.Ingress {
+func (r *AirflowReconciler) ingressAirflow(m *v1alpha1.Airflow) *v1beta1.Ingress {
 	ing := &v1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
@@ -234,7 +139,7 @@ func (r *RStudioReconciler) ingressRstudio(m *toolsv1alpha1.RStudio) *v1beta1.In
 		Spec: v1beta1.IngressSpec{
 			Rules: []v1beta1.IngressRule{
 				{
-					Host: m.Name + ".rstudio.tools",
+					Host: m.Name + "." + m.Namespace + ".svc.cluster.local",
 					IngressRuleValue: v1beta1.IngressRuleValue{
 						HTTP: &v1beta1.HTTPIngressRuleValue{
 							Paths: []v1beta1.HTTPIngressPath{
@@ -252,7 +157,82 @@ func (r *RStudioReconciler) ingressRstudio(m *toolsv1alpha1.RStudio) *v1beta1.In
 			},
 		},
 	}
-	// Set RStudio instance as the owner and controller
+	// Set airflow instance as the owner and controller
 	controllerutil.SetControllerReference(m, ing, r.Scheme)
 	return ing
+}
+
+func (r *AirflowReconciler) serviceAirflow(m *v1alpha1.Airflow) *corev1.Service {
+	labels := labelsForAirflow(m.Name)
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: labels,
+			Ports: []corev1.ServicePort{
+				{
+					Protocol:   corev1.ProtocolTCP,
+					Port:       8787,
+					TargetPort: intstr.FromInt(8787),
+				},
+			},
+		},
+	}
+	// Set airflow instance as the owner and controller
+	controllerutil.SetControllerReference(m, svc, r.Scheme)
+	return svc
+}
+
+func labelsForAirflow(name string) map[string]string {
+	return map[string]string{"app": "airflow", "airflow_cr": name}
+}
+
+func (r *AirflowReconciler) deployAirflow(m *v1alpha1.Airflow) *appsv1.Deployment {
+	ls := labelsForAirflow(m.Name)
+	image := m.Spec.Image
+	version := m.Spec.Version
+
+	if image == "" {
+		image = "apache/airflow"
+	}
+
+	if version == "" {
+		version = "latest"
+	}
+
+	dep := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      m.Name,
+			Namespace: m.Namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: ls,
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: ls,
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "airflow",
+							Image: image + ":" + version,
+							Ports: []corev1.ContainerPort{
+								{
+									Protocol:      corev1.ProtocolTCP,
+									ContainerPort: 8787,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	// Set Airflow instance as the owner and controller
+	ctrl.SetControllerReference(m, dep, r.Scheme)
+	return dep
 }
