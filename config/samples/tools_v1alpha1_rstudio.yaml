@@ -1,0 +1,6 @@
+apiVersion: tools.analytical-platform.justice.gov.uk/v1alpha1
+kind: RStudio
+metadata:
+  name: rstudio-sample
+spec:
+  # TODO(user): Add fields here

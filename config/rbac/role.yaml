@@ -88,6 +88,32 @@ rules:
   - patch
   - update
 - apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - rstudios
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - rstudios/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - rstudios/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - v1beta1
   resources:
   - ingress

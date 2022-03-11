@@ -16,4 +16,13 @@ resources:
   kind: Jupyterlab
   path: github.com/jasonbirchall/tools-controller-poc/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: analytical-platform.justice.gov.uk
+  group: tools
+  kind: RStudio
+  path: github.com/jasonbirchall/tools-controller-poc/api/v1alpha1
+  version: v1alpha1
 version: "3"
