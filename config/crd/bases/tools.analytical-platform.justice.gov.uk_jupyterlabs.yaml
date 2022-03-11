@@ -37,6 +37,8 @@ spec:
             properties:
               image:
                 type: string
+              name:
+                type: string
               size:
                 description: Foo is an example field of Jupyterlab. Edit jupyterlab_types.go
                   to remove/update
@@ -46,12 +48,15 @@ spec:
                 type: string
             required:
             - image
+            - name
             - size
             - version
             type: object
           status:
             description: JupyterlabStatus defines the observed state of Jupyterlab
             properties:
+              host:
+                type: string
               nodes:
                 description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
                   of cluster Important: Run "make" to regenerate code after modifying
@@ -60,6 +65,7 @@ spec:
                   type: string
                 type: array
             required:
+            - host
             - nodes
             type: object
         type: object

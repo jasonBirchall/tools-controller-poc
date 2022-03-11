@@ -32,6 +32,7 @@ type JupyterlabSpec struct {
 	Size    int32  `json:"size"`
 	Version string `json:"version"`
 	Image   string `json:"image"`
+	Name    string `json:"name"`
 }
 
 // JupyterlabStatus defines the observed state of Jupyterlab
@@ -39,6 +40,7 @@ type JupyterlabStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Nodes []string `json:"nodes"`
+	Host  string   `json:"host"`
 }
 
 //+kubebuilder:object:root=true

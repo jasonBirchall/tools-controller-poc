@@ -22,7 +22,9 @@ import (
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -51,6 +53,9 @@ type JupyterlabReconciler struct {
 // +kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
+
+// +kubebuilder:rbac:groups=v1beta1,resources=ingress,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=extensions,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -129,6 +134,23 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		}
 	}
 
+	// Check for ingress resource
+	ingress := &v1beta1.Ingress{}
+	err = r.Get(ctx, types.NamespacedName{Name: jlab.Name, Namespace: jlab.Namespace}, ingress)
+	if err != nil && errors.IsNotFound(err) {
+		ing := r.ingressJupyterLabs(jlab)
+		log.Log.Info("Creating a new Ingress", "Ingress.Namespace", ing.Namespace, "Ingress.Name", ing.Name)
+		err = r.Create(ctx, ing)
+		if err != nil {
+			log.Log.Error(err, "Failed to create new Ingress")
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{Requeue: true}, nil
+	} else if err != nil {
+		log.Log.Error(err, "Failed to get Ingress")
+		return ctrl.Result{}, err
+	}
+
 	return ctrl.Result{}, nil
 }
 
@@ -139,6 +161,39 @@ func (r *JupyterlabReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
 		Complete(r)
+}
+
+func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab) *v1beta1.Ingress {
+	return &v1beta1.Ingress{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      jlab.Name,
+			Namespace: jlab.Namespace,
+			Labels:    labelsForJupyterlab(jlab.Name),
+			Annotations: map[string]string{
+				"kubernetes.io/ingress.class": "nginx",
+			},
+		},
+		Spec: v1beta1.IngressSpec{
+			Rules: []v1beta1.IngressRule{
+				{
+					Host: jlab.Name + ".cp-2501-1650.cloud-platform.service.justice.gov.uk",
+					IngressRuleValue: v1beta1.IngressRuleValue{
+						HTTP: &v1beta1.HTTPIngressRuleValue{
+							Paths: []v1beta1.HTTPIngressPath{
+								{
+									Path: "/",
+									Backend: v1beta1.IngressBackend{
+										ServiceName: jlab.Name,
+										ServicePort: intstr.FromInt(80),
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
 }
 
 func getPodNames(pods []corev1.Pod) []string {
