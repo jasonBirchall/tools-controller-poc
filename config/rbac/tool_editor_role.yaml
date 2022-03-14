@@ -1,0 +1,24 @@
+# permissions for end users to edit tools.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tool-editor-role
+rules:
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - tools
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - tools/status
+  verbs:
+  - get

@@ -1,0 +1,24 @@
+apiVersion: tools.analytical-platform.justice.gov.uk/v1alpha1
+kind: Tool
+metadata:
+  name: rstudio
+spec:
+  name: rstudio
+
+---
+
+apiVersion: tools.analytical-platform.justice.gov.uk/v1alpha1
+kind: Tool
+metadata:
+  name: airflow
+spec:
+  name: airflow
+
+---
+
+apiVersion: tools.analytical-platform.justice.gov.uk/v1alpha1
+kind: Tool
+metadata:
+  name: jupyterlab
+spec:
+  name: jupyterlab

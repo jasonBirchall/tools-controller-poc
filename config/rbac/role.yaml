@@ -140,6 +140,32 @@ rules:
   - patch
   - update
 - apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - tools
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - tools/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - tools.analytical-platform.justice.gov.uk
+  resources:
+  - tools/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
   - v1beta1
   resources:
   - ingress
