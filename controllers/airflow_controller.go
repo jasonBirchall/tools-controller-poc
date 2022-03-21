@@ -32,7 +32,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 	toolsv1alpha1 "github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 )
 
@@ -58,7 +57,7 @@ type AirflowReconciler struct {
 func (r *AirflowReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	airflow := &v1alpha1.Airflow{}
+	airflow := &toolsv1alpha1.Airflow{}
 	err := r.Get(ctx, req.NamespacedName, airflow)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -130,7 +129,7 @@ func (r *AirflowReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *AirflowReconciler) ingressAirflow(m *v1alpha1.Airflow) *v1beta1.Ingress {
+func (r *AirflowReconciler) ingressAirflow(m *toolsv1alpha1.Airflow) *v1beta1.Ingress {
 	ing := &v1beta1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
@@ -162,7 +161,7 @@ func (r *AirflowReconciler) ingressAirflow(m *v1alpha1.Airflow) *v1beta1.Ingress
 	return ing
 }
 
-func (r *AirflowReconciler) serviceAirflow(m *v1alpha1.Airflow) *corev1.Service {
+func (r *AirflowReconciler) serviceAirflow(m *toolsv1alpha1.Airflow) *corev1.Service {
 	labels := labelsForAirflow(m.Name)
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -189,7 +188,7 @@ func labelsForAirflow(name string) map[string]string {
 	return map[string]string{"app": "airflow", "airflow_cr": name}
 }
 
-func (r *AirflowReconciler) deployAirflow(m *v1alpha1.Airflow) *appsv1.Deployment {
+func (r *AirflowReconciler) deployAirflow(m *toolsv1alpha1.Airflow) *appsv1.Deployment {
 	ls := labelsForAirflow(m.Name)
 	image := m.Spec.Image
 	version := m.Spec.Version

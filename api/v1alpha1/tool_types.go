@@ -33,6 +33,7 @@ type ToolSpec struct {
 	Name    string `json:"name,omitempty"`
 	User    string `json:"user,omitempty"`
 	Version string `json:"version,omitempty"`
+	Size    string `json:"size,omitempty"`
 }
 
 // ToolStatus defines the observed state of Tool

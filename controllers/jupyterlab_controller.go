@@ -33,7 +33,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 	toolsv1alpha1 "github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 )
 
@@ -68,7 +67,7 @@ type JupyterlabReconciler struct {
 func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	_ = log.FromContext(ctx)
 
-	jlab := &v1alpha1.Jupyterlab{}
+	jlab := &toolsv1alpha1.Jupyterlab{}
 	err := r.Get(ctx, req.NamespacedName, jlab)
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -103,7 +102,14 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 		err = r.Create(ctx, svc)
 		if err != nil {
-			log.Log.Error(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+			log.Log.Error(
+				err,
+				"Failed to create new Service",
+				"Service.Namespace",
+				svc.Namespace,
+				"Service.Name",
+				svc.Name,
+			)
 			return ctrl.Result{}, err
 		}
 
@@ -177,7 +183,7 @@ func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab
 		Spec: v1beta1.IngressSpec{
 			Rules: []v1beta1.IngressRule{
 				{
-					Host: jlab.Name + ".cp-2501-1650.cloud-platform.service.justice.gov.uk",
+					Host: jlab.Name + ".tools.dev.analytical-platform.service.justice.gov.uk",
 					IngressRuleValue: v1beta1.IngressRuleValue{
 						HTTP: &v1beta1.HTTPIngressRuleValue{
 							Paths: []v1beta1.HTTPIngressPath{
@@ -191,6 +197,12 @@ func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab
 							},
 						},
 					},
+				},
+			},
+			TLS: []v1beta1.IngressTLS{
+				{
+					Hosts:      []string{jlab.Name + ".tools.dev.analytical-platform.service.justice.gov.uk"},
+					SecretName: "jupyterlab-tls",
 				},
 			},
 		},
@@ -208,13 +220,7 @@ func getPodNames(pods []corev1.Pod) []string {
 	return podNames
 }
 
-func (r *JupyterlabReconciler) serviceJupyterLabs(m *v1alpha1.Jupyterlab) *corev1.Service {
-	port := corev1.ServicePort{
-		Name: "jupyterlab",
-		Port: 8888,
-	}
-
-	selectors := labelsForJupyterlab(m.Name)
+func (r *JupyterlabReconciler) serviceJupyterLabs(m *toolsv1alpha1.Jupyterlab) *corev1.Service {
 	service := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
@@ -222,10 +228,15 @@ func (r *JupyterlabReconciler) serviceJupyterLabs(m *v1alpha1.Jupyterlab) *corev
 		},
 	}
 
-	ports := []corev1.ServicePort{port}
 	service.Spec = corev1.ServiceSpec{
-		Ports:    ports,
-		Selector: selectors,
+		Ports: []corev1.ServicePort{
+			{
+				Name:     "http",
+				Port:     80,
+				Protocol: "TCP",
+			},
+		},
+		Selector: labelsForJupyterlab(m.Name),
 	}
 
 	// Set JupyterLab instance as the owner and controller
@@ -233,27 +244,27 @@ func (r *JupyterlabReconciler) serviceJupyterLabs(m *v1alpha1.Jupyterlab) *corev
 	return service
 }
 
-func (r *JupyterlabReconciler) deployJupyterLabs(m *v1alpha1.Jupyterlab) *appsv1.Deployment {
+func (r *JupyterlabReconciler) deployJupyterLabs(m *toolsv1alpha1.Jupyterlab) *appsv1.Deployment {
 	ls := labelsForJupyterlab(m.Name)
-	replicas := m.Spec.Size
 	image := m.Spec.Image
 	version := m.Spec.Version
 
 	if image == "" {
-		image = "jupyterlab"
+		image = "jupyterlab/datascience-notebook"
 	}
 
 	if version == "" {
-		version = "latest"
+		version = "lab-3.1.11"
 	}
 
 	dep := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
+			Labels:    ls,
 		},
 		Spec: appsv1.DeploymentSpec{
-			Replicas: &replicas,
+			Replicas: &m.Spec.Size,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: ls,
 			},
@@ -268,7 +279,8 @@ func (r *JupyterlabReconciler) deployJupyterLabs(m *v1alpha1.Jupyterlab) *appsv1
 							Image: image + ":" + version,
 							Ports: []corev1.ContainerPort{
 								{
-									Protocol:      corev1.ProtocolTCP,
+									Name:          "http",
+									Protocol:      "TCP",
 									ContainerPort: 8888,
 								},
 							},

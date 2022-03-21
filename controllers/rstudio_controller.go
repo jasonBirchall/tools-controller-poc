@@ -71,7 +71,7 @@ func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		}
 		return ctrl.Result{Requeue: true}, err
 	} else if err != nil {
-		log.Log.Error(err, "Failed to get Jupyterlab resource")
+		log.Log.Error(err, "Failed to get RStudio resource")
 		return ctrl.Result{}, err
 	}
 
@@ -113,10 +113,10 @@ func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 	podList := &corev1.PodList{}
 	listOpts := []client.ListOption{
 		client.InNamespace(rstudio.Namespace),
-		client.MatchingLabels(labelsForJupyterlab(rstudio.Name)),
+		client.MatchingLabels(labelsForRStudio(rstudio.Name)),
 	}
 	if err = r.List(ctx, podList, listOpts...); err != nil {
-		log.Log.Error(err, "Failed to list pods", "JupyterLab.Namespace", rstudio.Namespace, "JupyterLab.Name", rstudio.Name)
+		log.Log.Error(err, "Failed to list pods", "RStudio.Namespace", rstudio.Namespace, "RStudio.Name", rstudio.Name)
 		return ctrl.Result{}, err
 	}
 	podNames := getPodNames(podList.Items)
@@ -125,7 +125,7 @@ func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 		rstudio.Status.Nodes = podNames
 		err := r.Status().Update(ctx, rstudio)
 		if err != nil {
-			log.Log.Error(err, "Failed to update Jupyterlab status")
+			log.Log.Error(err, "Failed to update RStudio status")
 			return ctrl.Result{}, err
 		}
 	}
@@ -167,6 +167,7 @@ func (r *RStudioReconciler) deployRstudio(m *v1alpha1.RStudio) *appsv1.Deploymen
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      m.Name,
 			Namespace: m.Namespace,
+			Labels:    labels,
 		},
 		Spec: appsv1.DeploymentSpec{
 			Selector: &metav1.LabelSelector{
@@ -183,6 +184,7 @@ func (r *RStudioReconciler) deployRstudio(m *v1alpha1.RStudio) *appsv1.Deploymen
 							Image: image,
 							Ports: []corev1.ContainerPort{
 								{
+									Name:          "rstudio",
 									ContainerPort: 8787,
 									Protocol:      corev1.ProtocolTCP,
 								},
@@ -234,7 +236,7 @@ func (r *RStudioReconciler) ingressRstudio(m *toolsv1alpha1.RStudio) *v1beta1.In
 		Spec: v1beta1.IngressSpec{
 			Rules: []v1beta1.IngressRule{
 				{
-					Host: m.Name + ".rstudio.tools",
+					Host: m.Namespace + ".tools.dev.analytical-platform.service.justice.gov.uk",
 					IngressRuleValue: v1beta1.IngressRuleValue{
 						HTTP: &v1beta1.HTTPIngressRuleValue{
 							Paths: []v1beta1.HTTPIngressPath{
@@ -248,6 +250,12 @@ func (r *RStudioReconciler) ingressRstudio(m *toolsv1alpha1.RStudio) *v1beta1.In
 							},
 						},
 					},
+				},
+			},
+			TLS: []v1beta1.IngressTLS{
+				{
+					Hosts:      []string{m.Name + ".tools.dev.analytical-platform.service.justice.gov.uk"},
+					SecretName: "rstudio-tls",
 				},
 			},
 		},

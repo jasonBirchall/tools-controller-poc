@@ -41,6 +41,8 @@ spec:
                 type: string
               name:
                 type: string
+              size:
+                type: string
               user:
                 type: string
               version:
