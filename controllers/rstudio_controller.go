@@ -99,7 +99,14 @@ func (r *RStudioReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ct
 
 		err = r.Create(ctx, svc)
 		if err != nil {
-			log.Log.Error(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+			log.Log.Error(
+				err,
+				"Failed to create new Service",
+				"Service.Namespace",
+				svc.Namespace,
+				"Service.Name",
+				svc.Name,
+			)
 			return ctrl.Result{}, err
 		}
 
@@ -201,7 +208,7 @@ func (r *RStudioReconciler) deployRstudio(m *v1alpha1.RStudio) *appsv1.Deploymen
 }
 
 func labelsForRStudio(name string) map[string]string {
-	return map[string]string{"app": "Rstudio", "Rstudio_cr": name}
+	return map[string]string{"app": "rstudio", "Rstudio_cr": name, "chart": "rstudio-4.2.1"}
 }
 
 func (r *RStudioReconciler) serviceRstudio(m *v1alpha1.RStudio) *corev1.Service {
