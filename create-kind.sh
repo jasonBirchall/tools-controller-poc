@@ -21,7 +21,7 @@ containerdConfigPatches:
 EOF
 
 # connect the registry to the cluster network if not already connected
-if [ "$(docker inspect -f='{{json .NetwokSettings.Networks.kind}}' "${reg_name}")" = 'null' ]; then
+if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${reg_name}")" = 'null' ]; then
   docker network connect "kind" "${reg_name}"
 fi
 
@@ -38,3 +38,4 @@ data:
     host: "localhost:${reg_port}"
     help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
 EOF
+
