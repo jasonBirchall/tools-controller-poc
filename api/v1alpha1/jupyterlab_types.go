@@ -27,8 +27,6 @@ import (
 type JupyterlabSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of Jupyterlab. Edit jupyterlab_types.go to remove/update
 	Size    int32  `json:"size"`
 	Version string `json:"version"`
 	Image   string `json:"image"`
@@ -37,7 +35,6 @@ type JupyterlabSpec struct {
 
 // JupyterlabStatus defines the observed state of Jupyterlab
 type JupyterlabStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 	Nodes []string `json:"nodes"`
 	Host  string   `json:"host"`

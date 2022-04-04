@@ -34,7 +34,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 	toolsv1alpha1 "github.com/jasonbirchall/tools-controller-poc/api/v1alpha1"
 )
 
@@ -164,7 +163,7 @@ func (r *RStudioReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *RStudioReconciler) deployRstudio(m *v1alpha1.RStudio) *appsv1.Deployment {
+func (r *RStudioReconciler) deployRstudio(m *toolsv1alpha1.RStudio) *appsv1.Deployment {
 	labels := labelsForRStudio(m.Name)
 	image := m.Spec.Image
 	if image == "" {
@@ -211,7 +210,7 @@ func labelsForRStudio(name string) map[string]string {
 	return map[string]string{"app": "rstudio", "Rstudio_cr": name, "chart": "rstudio-4.2.1"}
 }
 
-func (r *RStudioReconciler) serviceRstudio(m *v1alpha1.RStudio) *corev1.Service {
+func (r *RStudioReconciler) serviceRstudio(m *toolsv1alpha1.RStudio) *corev1.Service {
 	labels := labelsForRStudio(m.Name)
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{

@@ -18,13 +18,13 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/api/extensions/v1beta1"
+	netv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -53,8 +53,8 @@ type JupyterlabReconciler struct {
 
 // +kubebuilder:rbac:groups=core,resources=pods,verbs=get;list;watch
 
-// +kubebuilder:rbac:groups=v1beta1,resources=ingress,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=extensions,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=networking,resources=ingress,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=ingresses,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -80,7 +80,7 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	deploy := &appsv1.Deployment{}
 	err = r.Get(ctx, types.NamespacedName{Name: jlab.Name, Namespace: jlab.Namespace}, deploy)
-	log.Log.Info("Creating a new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
+	log.Log.Info("Createng a new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
 	if err != nil && errors.IsNotFound(err) {
 		dep := r.deployJupyterLabs(jlab)
 		err = r.Create(ctx, dep)
@@ -103,8 +103,7 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		err = r.Create(ctx, svc)
 		if err != nil {
 			log.Log.Error(
-				err,
-				"Failed to create new Service",
+				err, "Failed to create new Service",
 				"Service.Namespace",
 				svc.Namespace,
 				"Service.Name",
@@ -141,7 +140,7 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	// Check for ingress resource
-	ingress := &v1beta1.Ingress{}
+	ingress := &netv1.Ingress{}
 	err = r.Get(ctx, types.NamespacedName{Name: jlab.Name, Namespace: jlab.Namespace}, ingress)
 	if err != nil && errors.IsNotFound(err) {
 		ing := r.ingressJupyterLabs(jlab)
@@ -166,12 +165,14 @@ func (r *JupyterlabReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&toolsv1alpha1.Jupyterlab{}).
 		Owns(&appsv1.Deployment{}).
 		Owns(&corev1.Service{}).
-		Owns(&v1beta1.Ingress{}).
+		Owns(&netv1.Ingress{}).
 		Complete(r)
 }
 
-func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab) *v1beta1.Ingress {
-	ingress := &v1beta1.Ingress{
+func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab) *netv1.Ingress {
+	class := "default"
+	host := fmt.Sprintf("%s.%s.svc.cluster.local", jlab.Name, jlab.Namespace)
+	ingress := &netv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      jlab.Name,
 			Namespace: jlab.Namespace,
@@ -180,18 +181,30 @@ func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab
 				"kubernetes.io/ingress.class": "nginx",
 			},
 		},
-		Spec: v1beta1.IngressSpec{
-			Rules: []v1beta1.IngressRule{
+		Spec: netv1.IngressSpec{
+			IngressClassName: &class,
+			TLS: []netv1.IngressTLS{
 				{
-					Host: jlab.Name + ".tools.dev.analytical-platform.service.justice.gov.uk",
-					IngressRuleValue: v1beta1.IngressRuleValue{
-						HTTP: &v1beta1.HTTPIngressRuleValue{
-							Paths: []v1beta1.HTTPIngressPath{
+					Hosts:      []string{host},
+					SecretName: jlab.Namespace,
+				},
+			},
+			Rules: []netv1.IngressRule{
+				{
+					Host: host,
+
+					IngressRuleValue: netv1.IngressRuleValue{
+						HTTP: &netv1.HTTPIngressRuleValue{
+							Paths: []netv1.HTTPIngressPath{
 								{
 									Path: "/",
-									Backend: v1beta1.IngressBackend{
-										ServiceName: jlab.Name,
-										ServicePort: intstr.FromInt(80),
+									Backend: netv1.IngressBackend{
+										Service: &netv1.IngressServiceBackend{
+											Name: jlab.Name,
+											Port: netv1.ServiceBackendPort{
+												Number: 80,
+											},
+										},
 									},
 								},
 							},
@@ -199,14 +212,9 @@ func (r *JupyterlabReconciler) ingressJupyterLabs(jlab *toolsv1alpha1.Jupyterlab
 					},
 				},
 			},
-			TLS: []v1beta1.IngressTLS{
-				{
-					Hosts:      []string{jlab.Name + ".tools.dev.analytical-platform.service.justice.gov.uk"},
-					SecretName: "jupyterlab-tls",
-				},
-			},
 		},
 	}
+
 	ctrl.SetControllerReference(jlab, ingress, r.Scheme)
 	return ingress
 }

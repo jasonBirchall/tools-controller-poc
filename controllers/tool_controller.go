@@ -146,7 +146,9 @@ func (r *ToolReconciler) createAirflow(tool *toolsv1alpha1.Tool) *v1alpha1.Airfl
 			Namespace: tool.Namespace,
 		},
 		Spec: v1alpha1.AirflowSpec{
-			Image: tool.Spec.Image,
+			Image:   tool.Spec.Image,
+			Name:    tool.Spec.Name + tool.Spec.Version,
+			Version: tool.Spec.Version,
 		},
 	}
 	ctrl.SetControllerReference(tool, airflow, r.Scheme)
