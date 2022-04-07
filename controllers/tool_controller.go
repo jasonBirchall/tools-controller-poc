@@ -118,7 +118,7 @@ func (r *ToolReconciler) createRStudio(tool *toolsv1alpha1.Tool) *v1alpha1.RStud
 			Namespace: tool.Namespace,
 		},
 		Spec: v1alpha1.RStudioSpec{
-			Image: tool.Spec.Image,
+			Image: tool.Spec.ImageName,
 		},
 	}
 	ctrl.SetControllerReference(tool, rstudio, r.Scheme)
@@ -132,7 +132,7 @@ func (r *ToolReconciler) createJupyterLab(tool *toolsv1alpha1.Tool) *v1alpha1.Ju
 			Namespace: tool.Namespace,
 		},
 		Spec: v1alpha1.JupyterlabSpec{
-			Image: tool.Spec.Image,
+			ImageName: tool.Spec.ImageName,
 		},
 	}
 	ctrl.SetControllerReference(tool, jupyterlab, r.Scheme)
@@ -146,9 +146,8 @@ func (r *ToolReconciler) createAirflow(tool *toolsv1alpha1.Tool) *v1alpha1.Airfl
 			Namespace: tool.Namespace,
 		},
 		Spec: v1alpha1.AirflowSpec{
-			Image:   tool.Spec.Image,
-			Name:    tool.Spec.Name + tool.Spec.Version,
-			Version: tool.Spec.Version,
+			Image: tool.Spec.ImageName,
+			Name:  tool.Spec.Name + tool.Spec.Version,
 		},
 	}
 	ctrl.SetControllerReference(tool, airflow, r.Scheme)

@@ -98,6 +98,7 @@ func (r *JupyterlabReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	err = r.Get(ctx, types.NamespacedName{Name: jlab.Name, Namespace: jlab.Namespace}, service)
 	if err != nil && errors.IsNotFound(err) {
 		svc := r.serviceJupyterLabs(jlab)
+
 		log.Log.Info("Creating a new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
 
 		err = r.Create(ctx, svc)
@@ -254,7 +255,7 @@ func (r *JupyterlabReconciler) serviceJupyterLabs(m *toolsv1alpha1.Jupyterlab) *
 
 func (r *JupyterlabReconciler) deployJupyterLabs(m *toolsv1alpha1.Jupyterlab) *appsv1.Deployment {
 	ls := labelsForJupyterlab(m.Name)
-	image := m.Spec.Image
+	image := m.Spec.ImageName
 	version := m.Spec.Version
 
 	if image == "" {

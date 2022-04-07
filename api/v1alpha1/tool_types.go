@@ -29,17 +29,18 @@ type ToolSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of Tool. Edit tool_types.go to remove/update
-	Image   string `json:"image,omitempty"`
-	Name    string `json:"name,omitempty"`
-	User    string `json:"user,omitempty"`
-	Version string `json:"version,omitempty"`
-	Size    string `json:"size,omitempty"`
+	ImageName string `json:"image,omitempty"`
+	Name      string `json:"name,omitempty"`
+	Version   string `json:"version,omitempty"`
+	User      string `json:"user,omitempty"`
+	Size      string `json:"size"`
 }
 
 // ToolStatus defines the observed state of Tool
 type ToolStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	Installed bool `json:"bool"`
 }
 
 //+kubebuilder:object:root=true

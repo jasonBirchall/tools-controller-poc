@@ -33,7 +33,9 @@ spec:
           metadata:
             type: object
           spec:
-            description: JupyterlabSpec defines the desired state of Jupyterlab
+            description: 'NOTE: json tags are required.  Any new fields you add must
+              have json tags for the fields to be serialized. JupyterlabSpec defines
+              the desired state of Jupyterlab'
             properties:
               image:
                 type: string
@@ -45,6 +47,8 @@ spec:
                 format: int32
                 type: integer
               version:
+                description: For some reason version is required to be serialised
+                  as a string.
                 type: string
             required:
             - image
@@ -63,9 +67,12 @@ spec:
                 items:
                   type: string
                 type: array
+              status:
+                type: string
             required:
             - host
             - nodes
+            - status
             type: object
         type: object
     served: true
