@@ -20,24 +20,24 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // JupyterlabSpec defines the desired state of Jupyterlab
 type JupyterlabSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
-	Size    int32  `json:"size"`
-	Version string `json:"version"`
-	Image   string `json:"image"`
-	Name    string `json:"name"`
+	Size int32 `json:"size"`
+	// For some reason version is required to be serialised as a string.
+	Version   string `json:"version"`
+	ImageName string `json:"image"`
+	Name      string `json:"name"`
 }
 
 // JupyterlabStatus defines the observed state of Jupyterlab
 type JupyterlabStatus struct {
 	// Important: Run "make" to regenerate code after modifying this file
-	Nodes []string `json:"nodes"`
-	Host  string   `json:"host"`
+	Nodes    []string `json:"nodes"`
+	Hostname string   `json:"host"`
+	Status   string   `json:"status"`
 }
 
 //+kubebuilder:object:root=true
